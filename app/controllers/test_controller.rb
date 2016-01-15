@@ -1,5 +1,6 @@
 class TestController < ApplicationController
+  respond_to :json
   def index
-    respond_to 
+    render json: {status: 'ok'}
   end
 end
