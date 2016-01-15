@@ -1,0 +1,16 @@
+<% if user_signed_in? %>
+	<!-- <div id="page-wrapper"> -->
+<% end %>
+<% flash.each do |name, msg| %>
+  <% if msg.is_a?(String) %>
+    <div class="alert alert-<%= name.to_s == 'notice' ? 'success' : 'danger' %>">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <ul class="margin-bottom-none padding-left-lg">
+      	<li><%= content_tag :div, msg, :id => "flash_#{name}" %></li>
+      </ul>
+    </div>
+  <% end %>
+<% end %>
+<% if user_signed_in? %>
+	<!-- </div> -->
+<% end %>

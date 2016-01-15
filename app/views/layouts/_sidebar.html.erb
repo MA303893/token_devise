@@ -1,0 +1,78 @@
+<div class="sidebar" role="navigation">
+  <div class="sidebar-nav navbar-collapse">
+    <ul class="nav" id="side-menu">
+      <!-- <li class="sidebar-search">
+        <!-- <div class="input-group custom-search-form">
+          <input type="text" class="form-control" placeholder="Search...">
+          <span class="input-group-btn">
+          <button class="btn btn-default" type="button">
+            <i class="fa fa-search"></i>
+          </button>
+        </span>
+        </div>
+      </li> -->
+      <!-- /input-group -->
+      <li>
+        <a href="#"><i class="fa fa-wrench fa-fw"></i> Settings<span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level">
+          <li><%= active_link_to "Roles", roles_path %></li>
+          <li><%= active_link_to "Groups", groups_path %></li>
+          <li><%= active_link_to "Users", users_path %></li>
+	<li><%= active_link_to "Cloud Providers", cloud_providers_path %> </li>
+	 <li><%= active_link_to "Ratecards", ratecards_path %> </li>
+	 <li><%= active_link_to "Aliases", aliases_path %> </li>
+        </ul>
+      </li>
+      <li>
+        <%= active_link_to '' do %><i class="fa fa-sitemap fa-fw"></i> Explore<span class="fa arrow"></span><%end%>
+        <ul class="nav nav-second-level">
+          <li><%= active_link_to  tenants_path do %><i class="fa fa-sitemap fa-fw"></i> All Tenants <%end%></li>
+          <% Tenant.all.each do |tenant| %>
+            <li>
+              <%= active_link_to tenant_subscriptions_path(tenant) do %> <%=tenant.name %> <span class="fa arrow"></span> <% end %>
+              <ul class="nav nav-third-level">
+                <li><%= active_link_to "All Subscriptions", tenant_subscriptions_path(tenant)%></li>
+                <% tenant.subscriptions.each do |subscription| %>
+                  <li><%= active_link_to tenant_subscription_path(tenant, subscription) do %> <%=subscription.name%> <span class="fa arrow"></span><% end %>
+                  <ul class="nav nav-fourth-level">
+                      <li><%= active_link_to tenant_subscription_blueprints_path(tenant, subscription) do %><i class="fa fa-cog fa-fw"></i> All Blueprints <% end %></li>
+                        <% subscription.blueprints.each do |blueprint| %>
+                        <li>
+                          <%= active_link_to tenant_subscription_blueprint_path(tenant, subscription, blueprint) do %><i class="fa fa-cog fa-fw"></i> <%= blueprint.name %> <% end %>
+                        </li>
+                        <% end %>
+                      </ul>
+                      
+                  </li>
+                <% end %>
+              </ul>
+            </li>
+          <% end %>
+        </ul>
+      </li>
+      
+      <!-- <li> <%#= link_to _tenant_subscriptions_path(current_user., params[:tenant_id].to_i) do %><i class="fa fa-road fa-fw"></i> Subscriptions<%#end%> </li>
+      <li> <%#= link_to _tenant_subscription_blueprints_path do %><i class="fa fa-briefcase fa-fw"></i> Blueprints<%#end%> </li>
+      <li> <%#= link_to service_instances_path do %> <i class="fa fa-cloud fa-fw"></i> Service Instances<%#end%> </li> -->
+      <!-- <li>
+        <a href="tables.html"><i class="fa fa-table fa-fw"></i> Tables</a>
+      </li>
+      <li>
+        <a href="forms.html"><i class="fa fa-edit fa-fw"></i> Forms</a>
+      </li>
+      <li>
+        <a href="#"><i class="fa fa-wrench fa-fw"></i> UI Elements<span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level">
+          <li><a href="panels-wells.html">Panels and Wells</a></li>
+          <li><a href="buttons.html">Buttons</a></li>
+          <li><a href="notifications.html">Notifications</a></li>
+          <li><a href="typography.html">Typography</a></li>
+          <li><a href="grid.html">Grid</a></li>
+        </ul>
+        <!-- /.nav-second-level -->
+      <!-- </li> -->
+    </ul>
+  </div>
+  <!-- /.sidebar-collapse -->
+</div>
+<!-- /.navbar-static-side -->
