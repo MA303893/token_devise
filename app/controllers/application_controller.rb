@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :null_session, :if => Proc.new { |c| c.request.format == 'application/json'}
   skip_before_filter :verify_authenticity_token#, :if => Proc.new { |c| c.request.format == 'application/json' }
 
-  # before_action :authenticate_user!, :except => [:sign_in, :sign_up]
+  before_action :authenticate_user!, :except => [:sign_in, :sign_up]
   before_action :authenticate_user_from_token!, :except => [:sign_in, :sign_up], unless: :devise_controller?
   before_action :authenticate_user!, :except => [:sign_in, :sign_up], unless: :devise_controller?
   before_action :configure_permitted_parameters, if: :devise_controller?
