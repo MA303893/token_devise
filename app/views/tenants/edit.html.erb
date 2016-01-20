@@ -1,0 +1,19 @@
+<h1>Tenants#edit</h1>
+<p>Find me in app/views/tenants/edit.html.erb</p>
+
+
+
+<%= form_for :tenant, url: tenant_path, method: :put do |f| %>
+  
+  <div class="field">
+    <%= f.label :name %><br>
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
+    <%= f.label :display_name %><br>
+    <%= f.text_area :display_name %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

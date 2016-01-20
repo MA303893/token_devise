@@ -1,10 +1,10 @@
 
 ELASTICSEARCH_SERVER = {
-  "ip" => "internal-elasticsearch-1610824972.us-east-1.elb.amazonaws.com",
+  "ip" => "10.220.3.40",
   "port" => "9200",
   "shards" => "2",
   "replicas" => "2",
-  "admin_index" => "admin"
+  "admin_index" => "stupid_admin"
 }
 
 LOGSTASH_SERVER = {

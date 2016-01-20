@@ -1,0 +1,22 @@
+<h1>Listing Subscriptions</h1>
+ 
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Display Name</th>
+    <th>Budget</th>
+
+  </tr>
+ 
+  <% @subscriptions.each do |subscription| %>
+    <tr>
+      <td><%= subscription.id %></td>
+      <td><%= subscription.name %></td>
+      <td><%= subscription.display_name %></td>
+      <td><%= subscription.budget %></td>
+      
+      
+    </tr>
+  <% end %>
+</table>

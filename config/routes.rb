@@ -1,7 +1,13 @@
 Rails.application.routes.draw do
   get 'test/index'
 
-  root 'user#index'
+  root 'tenants#index'
+
+  resources :tenants do
+    resources :subscriptions do
+      resources :blueprints
+    end
+  end
 
   devise_for :users
   # The priority is based upon order of creation: first created -> highest priority.

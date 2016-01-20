@@ -1,0 +1,19 @@
+<h1>Listing Tenants</h1>
+ 
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Display Name</th>
+  </tr>
+ 
+  <% @tenants.each do |tenant| %>
+    <tr>
+      <td><%= tenant.name %></td>
+      <td><%= tenant.display_name %></td>
+      <td><%= link_to 'Show', tenant_path(id: tenant.id) %></td>
+      <td><%= link_to 'Edit', edit_tenant_path(id: tenant.id) %></td>
+      <td><%= link_to 'Destroy', tenant_path(id: tenant.id), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      
+    </tr>
+  <% end %>
+</table>
