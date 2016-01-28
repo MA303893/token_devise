@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  get 'test/index'
+  post 'audit_log_input.json' => 'paas_service#write_to_remote_audit_log_input_txt'
 
   root 'tenants#index'
 

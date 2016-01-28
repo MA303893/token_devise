@@ -23,7 +23,7 @@ class Tenant
     @client = Elasticsearch::Client.new host: [ { host: ELASTICSEARCH_SERVER['ip'].to_s , port: ELASTICSEARCH_SERVER['port'].to_s } ]
     self.name = params["name"]
     if @client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq'
-      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
       result = @client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenants' , id: res_id, body: {      Name: params["display_name"], Tenant: params["name"] ,      State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s}
       create_index
       update_logstash
@@ -32,8 +32,8 @@ class Tenant
       @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq', body: {tenantseq: {
                                                                                                           properties:{}
                                                                                                         }
-                                                                                                        }, refresh: true
-      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+                                                                                                        }
+      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
       result = @client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenants' , id: res_id, body: {      Name: params["display_name"], Tenant: params["name"] ,      State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s}
       create_index
       update_logstash

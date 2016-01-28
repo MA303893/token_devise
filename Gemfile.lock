@@ -295,6 +295,7 @@ DEPENDENCIES
   jenkins_api_client
   jquery-rails
   jquery-ui-rails
+  net-ssh
   rails (= 4.2.4)
   ridley-connectors
   sass-rails (~> 5.0)
