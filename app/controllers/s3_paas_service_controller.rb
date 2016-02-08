@@ -15,7 +15,7 @@ class S3PaasServiceController < ApplicationController
       render json: {"status" => "ok"}
     elsif params.has_key?(:elb)
       Thread.new do
-        ob.write_elb(params(:elb))
+        ob.write_elb(params)
       end
       render json: {"status" => "ok"}
     elsif params.has_key?(:asg)

@@ -135,10 +135,8 @@ class Remote_edit
     grep = grep_remote_file('loadbalancer','lb_logs.txt',tempTSBString)
     if grep.empty?
       puts "writing lb_logs.txt"
-      file_content = ''
-      if tag["logs"] != nil
-        file_content = "#{tempTSBString} LoadBalancer #{params[:elb][:name]} #{params[:elb][:refresh_interval]} #{time} logs s3://#{params[:elb][:s3_bucket]}/AWSLogs/#{params[:elb][:account]}/elasticloadbalancing/#{params[:elb][:region]}/"
-      end
+      file_content =""
+      file_content = "#{tempTSBString} LoadBalancer #{params[:elb][:name]} #{params[:elb][:refresh_interval]} #{time} logs s3://#{params[:elb][:s3_bucket]}/AWSLogs/#{params[:elb][:account]}/elasticloadbalancing/#{params[:elb][:region]}/"
       write_remote_file('loadbalancer','lb_logs.txt',file_content)
     end
   end
@@ -177,7 +175,3 @@ class Remote_edit
 
 
 end
-
-
-
-
