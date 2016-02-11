@@ -17,6 +17,7 @@ class Remote_edit
     @host = '10.220.0.62' #enter remote ip here
     @username = 'root'
     @keys = ["#{Rails.root}/VS_Key.pem"] # enter key path here
+    @aws_config_path = '/root/.aws'
   end
 
   def check_remote_file_exists(resourse_dir,filename)
@@ -171,6 +172,10 @@ class Remote_edit
       write_remote_file('rds','rds_logs.txt',file_content)
     end
 
+  end
+
+  def update_remote_aws_config
+    
   end
 
 
