@@ -1,4 +1,6 @@
 require 'elasticsearch'
+require 'net/ssh'
+require 'net/scp'
 
 class Tenant
 
@@ -22,23 +24,23 @@ class Tenant
   def save(params)
     @client = Elasticsearch::Client.new host: [ { host: ELASTICSEARCH_SERVER['ip'].to_s , port: ELASTICSEARCH_SERVER['port'].to_s } ]
     self.name = params["name"]
-    if @client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq'
-      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
+    #if @client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq'
+      res_id = params["id"]  #@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
       result = @client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenants' , id: res_id, body: {      Name: params["display_name"], Tenant: params["name"] ,      State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s}
       create_index
       update_logstash
       return res_id
-    else
-      @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq', body: {tenantseq: {
-                                                                                                          properties:{}
-                                                                                                        }
-                                                                                                        }
-      res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
-      result = @client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenants' , id: res_id, body: {      Name: params["display_name"], Tenant: params["name"] ,      State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s}
-      create_index
-      update_logstash
-      return res_id
-    end
+    #else
+      #@client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'tenantseq', body: {tenantseq: {
+       #                                                                                                   properties:{}
+       #                                                                                                 }
+        #                                                                                                }
+      #res_id = @client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenantseq' , id: 'sequence', body:{ })['_version']
+      #result = @client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'tenants' , id: res_id, body: {      Name: params["display_name"], Tenant: params["name"] ,      State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s}
+      #create_index
+      #update_logstash
+      #return res_id
+    #end
   end
 
   def update(params,id)
@@ -100,7 +102,7 @@ class Tenant
       subscription.display_name = res['_source']['Name']
       subscription.id = res['_id']
       subscription.budget = res['_source']['Budget']
-      subscription.tenant_id = res['_source']['Tenant_id']
+      subscription.tenant_id = res['_source']['Tenant']#['Tenant_id']
       subscription.created_at = res['_source']['DateofCreation']
       subscription.updated_at = res['_source']['LastUpdated']
       subscriptions << subscription
@@ -144,7 +146,7 @@ class Tenant
   def update_logstash      
     Net::SCP.download!(LOGSTASH_SERVER['ip'], LOGSTASH_SERVER['username'], LOGSTASH_SERVER['server_path_download'], LOGSTASH_SERVER['rails_path_download'], :ssh => { :keys => LOGSTASH_SERVER['keys_path'] } )
     puts "Downloaded"
-    myfile = File.open("agent.conf", "r+")
+    myfile = File.open("agent.conf", "w+")
     text = File.read(myfile)
     a   = " \nkafka {" +              
           "\nzk_connect => \"internal-kafkacluster-218486480.us-east-1.elb.amazonaws.com:2181\"" +
@@ -161,5 +163,11 @@ class Tenant
     puts "edited"
     Net::SCP.upload!(LOGSTASH_SERVER['ip'], LOGSTASH_SERVER['username'], LOGSTASH_SERVER['rails_path_upload'], LOGSTASH_SERVER['server_path_upload'], :ssh => { :keys => LOGSTASH_SERVER['keys_path'] } )
     puts "Uploaded"
+    Net::SSH.start(
+      LOGSTASH_SERVER['ip'], LOGSTASH_SERVER['username'], :keys => LOGSTASH_SERVER['keys_path']
+      ) do |session|
+        res = session.exec!("service logstash restart")
+        puts res
+    end
   end
 end

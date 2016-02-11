@@ -13,7 +13,7 @@ class Subscription
       subscription.display_name = res['_source']['Name']
       subscription.id = res['_id']
       subscription.budget = res['_source']['Budget']
-      subscription.tenant_id = res['_source']['Tenant_id']
+      subscription.tenant_id = res['_source']['Tenant']#['Tenant_id']
       subscription.created_at = res['_source']['DateofCreation']
       subscription.updated_at = res['_source']['LastUpdated']
       subscription.tenant_name = res['_source']['Tenant']
@@ -25,30 +25,31 @@ class Subscription
 
   def save(params)
 
-    if @@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'subscriptionseq'
-      res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptionseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+    #if @@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'subscriptionseq'
+      res_id = params[:id] #@@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptionseq' , id: 'sequence', body:{ }, refresh: true)['_version']
       result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptions' , id: res_id, body: {
         Name: params["display_name"], Tenant: tenant.name , Tenant_id: params['tenant_id'],
         Subscription: params['name'], Budget: params['budget'],
         State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
       }
+      self.name = params['name']
       create_billing
       return res_id
-    else
-      @@client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'subscriptionseq', body: {
-        subscriptionseq: {
-          properties:{}
-        }
-      }
-      res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptionseq' , id: 'sequence', body:{ }, refresh: true)['_version']
-      result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptions' , id: res_id, body: {
-        Name: params["display_name"], Tenant: tenant.name , Tenant_id: params['tenant_id'],
-        Subscription: params['name'], Budget: params['budget'],
-        State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
-      }
-      create_billing
-      return res_id
-    end
+    #else
+    #   @@client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'subscriptionseq', body: {
+    #     subscriptionseq: {
+    #       properties:{}
+    #     }
+    #   }
+    #   res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptionseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+    #   result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'subscriptions' , id: res_id, body: {
+    #     Name: params["display_name"], Tenant: tenant.name , Tenant_id: params['tenant_id'],
+    #     Subscription: params['name'], Budget: params['budget'],
+    #     State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
+    #   }
+    #   create_billing
+    #   return res_id
+    # end
   end
 
   def self.find(id)
@@ -66,6 +67,7 @@ class Subscription
       subscription.updated_at = subscription_result['_source']['LastUpdated']
       subscription.tenant_id = subscription_result['_source']['Tenant_id']
       subscription.tenant_name = subscription_result['_source']['Tenant']
+      subscription.budget = subscription_result['_source']['Budget']
       return subscription
     end
   end
@@ -113,6 +115,7 @@ class Subscription
         puts blueprint
         month = Time.now.strftime("%m").to_s
         year = Time.now.strftime("%Y").to_s
+        puts self.name
         id   = self.tenant.name+self.name+Time.now.strftime("%m").to_s+Time.now.strftime("%Y").to_s
         tenantname = self.tenant.name.to_s
         subscriptionname = self.name.to_s

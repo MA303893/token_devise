@@ -61,6 +61,6 @@ class TenantsController < ApplicationController
 
   private
   def permitted_params
-    params.require(:tenant).permit(:name, :display_name)
+    params.require(:tenant).permit(:id, :name, :display_name)
   end
 end

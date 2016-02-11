@@ -4,8 +4,8 @@ class SubscriptionsController < ApplicationController
 
   def index
     @tenant =  Tenant.find(params[:tenant_id])
-    #@subscriptions = @tenant.subscriptions
-    @subscriptions =  Subscription.all
+    @subscriptions = @tenant.subscriptions
+    #@subscriptions =  Subscription.all
   end
 
   def create
@@ -60,6 +60,6 @@ class SubscriptionsController < ApplicationController
 
   private
   def permitted_params
-    params.require(:subscription).permit(:name, :display_name, :budget).merge!(tenant_id: params[:tenant_id])
+    params.require(:subscription).permit(:id, :name, :display_name, :budget).merge!(tenant_id: params[:tenant_id])
   end
 end
