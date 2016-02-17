@@ -11,6 +11,7 @@ class TenantsController < ApplicationController
 
   def create
     @tenant = Tenant.new
+
     id = @tenant.save(permitted_params)
     @tenant = Tenant.find(id)
     respond_to do |format|
@@ -61,6 +62,7 @@ class TenantsController < ApplicationController
 
   private
   def permitted_params
+    params[:tenant][:display_name] ||= params[:tenant][:name]
     params.require(:tenant).permit(:id, :name, :display_name)
   end
 end

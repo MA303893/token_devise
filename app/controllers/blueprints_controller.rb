@@ -12,6 +12,8 @@ class BlueprintsController < ApplicationController
 
   def create
     @blueprint = Blueprint.new
+    @blueprint.subscription_id = params[:subscription_id]
+    params[:display_name] ||= params[:name]
     id = @blueprint.save(permitted_params)
     @blueprint = Blueprint.find(id)
     respond_to do |format|
@@ -22,7 +24,7 @@ class BlueprintsController < ApplicationController
   end
 
   def destroy
-    @blueprint =  Subscription.find(params[:id])
+    @blueprint =  Blueprint.find(params[:id])
     @blueprint.destroy
     # redirect_to tenants_path
     respond_to do |format|
@@ -66,6 +68,7 @@ class BlueprintsController < ApplicationController
 
   private
   def permitted_params
-    params.require(:blueprint).permit(:name, :display_name).merge!(tenant_id: params[:tenant_id], subscription_id: params[:subscription_id])
+    params[:blueprint][:display_name] ||= params[:blueprint][:name]
+    params.require(:blueprint).permit(:id, :name, :display_name).merge!(tenant_id: params[:tenant_id], subscription_id: params[:subscription_id])
   end
 end

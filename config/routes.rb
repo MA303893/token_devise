@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   post  'add_account' => 'multi_account#add_account'
 
   post 'audit_log_input' => 'paas_service#write_to_remote_audit_log_input_txt'
-  post 'paas_s3' => 's3_paas_service#write_to_s3'
+  post 'paas_service' => 'paas_services#write_service'
 
   root 'tenants#index'
 

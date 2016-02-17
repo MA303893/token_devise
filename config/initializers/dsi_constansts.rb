@@ -16,3 +16,12 @@ LOGSTASH_SERVER = {
   "username" => "root",
   "keys_path" => "/dsh/application/rails/VS_Key.pem"
 }
+
+LOGSTASH_PRODUCER = {
+  "ip" => "10.220.2.219",
+  "path" => '/dsh/application/logstash-1.5.0/logstash-plugins',  
+  "username" => "root",
+  "keys_path" => "/dsh/application/rails/VS_Key.pem",
+  "aws_config_path" => "/root"
+
+}

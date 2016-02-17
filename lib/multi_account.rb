@@ -13,10 +13,10 @@ class Remote_edit_profile
   attr_reader :path, :host, :username, :keys
 
   def initialize
-    @path = '/root'
-    @host = '10.220.0.62' #enter remote ip here
-    @username = 'root'
-    @keys = ["#{Rails.root}/VS_Key.pem"] # enter key path here
+    @path = LOGSTASH_PRODUCER["path"]
+    @host = LOGSTASH_PRODUCER["ip"] #enter remote ip of logstash producer here
+    @username = LOGSTASH_PRODUCER["username"]
+    @keys = LOGSTASH_PRODUCER["keys_path"] # enter key path here   ["#{Rails.root}/VS_Key.pem"]
   end
 
   def check_remote_file_exists(resourse_dir,filename)
@@ -72,7 +72,7 @@ class Remote_edit_profile
 
 
   def update_remote_aws_config(param)
-  	region = param[:region]
+  	#region = param[:region]
   	index = param[:arn].index('::')
   	account = param[:arn][index+2..index+13]
   	role_arn = param[:arn]
@@ -83,7 +83,7 @@ class Remote_edit_profile
     grep = grep_remote_file('.aws','config',tempTSBString)
     if grep.empty?
       puts "writing aws config"
-      file_content = "[profile #{account}]\n#{tempTSBString}\nsource_profile = default\noutput = text\nregion = #{region}"
+      file_content = "[profile #{account}]\n#{tempTSBString}\nsource_profile = default\noutput = text"
       write_remote_file('.aws','config',file_content)
     end
   end

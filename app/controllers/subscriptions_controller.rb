@@ -60,6 +60,8 @@ class SubscriptionsController < ApplicationController
 
   private
   def permitted_params
+    params[:subscription][:display_name] ||= params[:subscription][:name]
+    params[:subscription][:budget] ||= 1000
     params.require(:subscription).permit(:id, :name, :display_name, :budget).merge!(tenant_id: params[:tenant_id])
   end
 end

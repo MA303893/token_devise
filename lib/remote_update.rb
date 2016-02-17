@@ -1,4 +1,5 @@
 require 'net/ssh'
+require 'elasticsearch'
 
 class String
   def to_bool
@@ -13,12 +14,171 @@ class Remote_edit
   attr_reader :path, :host, :username, :keys
 
   def initialize
-    @path = '/dsh/application/logstash-1.5.0/logstash-plugins'
-    @host = '10.220.0.62' #enter remote ip here
-    @username = 'root'
-    @keys = ["#{Rails.root}/VS_Key.pem"] # enter key path here
-    @aws_config_path = '/root/.aws'
+    @path = LOGSTASH_PRODUCER["path"]
+    @host = LOGSTASH_PRODUCER["ip"] #enter remote ip of logstash producer here
+    @username = LOGSTASH_PRODUCER["username"]
+    @keys = LOGSTASH_PRODUCER["keys_path"] # enter key path here
+    @client = Elasticsearch::Client.new host: [ { host: ELASTICSEARCH_SERVER['ip'].to_s , port: ELASTICSEARCH_SERVER['port'].to_s } ]
   end
+
+  def asg(params)
+    if !@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: "asg_monitoring"
+      res = @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'asg_monitoring', body: {
+        asg_monitoring: {
+          properties: {
+            Account: { type: "string", index: "not_analyzed" },
+            Region: { type: "string", index: "not_analyzed" },
+            Tenant: { type: "string", index: "not_analyzed" },
+            Subscription: { type: "string", index: "not_analyzed" },
+            Blueprint: { type: "string", index: "not_analyzed" },
+            Metrics: { type: "string", index: "not_analyzed" },
+            Availability: { type: "string", index: "not_analyzed" },
+            Logs: { type: "string", index: "not_analyzed" },
+            Name: { type: "string", index: "not_analyzed" },
+            Service: { type: "string", index: "not_analyzed" },
+            Metrics_interval: { type: "string", index: "not_analyzed" },
+            Availability_interval: { type: "string", index: "not_analyzed" },
+            Logs_interval: { type: "string", index: "not_analyzed" },
+            Time: { type: "string", index: "not_analyzed" }
+
+          }
+        }
+      }
+      puts res
+    else
+      name = params['name']
+      tenant = Tenant.find(params['tenant']).name
+      subscription = Subscription.find(params['subscription']).name
+      blueprint = Blueprint.find(params['blueprint']).name
+      index = params['account'].index('::')
+      account = params['account'][index+2..index+13]
+      region = params['region']
+      time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+      availability = 'OFF' if params['metrics']['Infrastructure-Availability']['enabled']
+      availability_interval = params['metrics']['Infrastructure-Availability']['refresh-interval']
+      logs = params['metrics']['Log-Monitoring'].keys.join(" ") if !params['metrics']['Log-Monitoring'].nil?
+      logs_interval = params['refresh_interval']
+      metrics_keys = params['metrics']['Infrastructure-Metrics'].keys if !params['metrics']['Infrastructure-Metrics'].nil?
+      metrics = Array.new
+      metrics_interval = nil
+      metrics_keys.each do |key|
+        params['metrics']['Infrastructure-Metrics'][key]['output-format'].each do |inner_hash|
+          metrics << inner_hash.keys
+        end
+        metrics_interval = params['metrics']['Infrastructure-Metrics'][key]['refresh-interval']
+      end
+      metrics = metrics.flatten.join(" ")
+
+      
+      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "asg_monitoring", id: 1,
+      body: {
+        Account: account,
+        Region: region,
+        Tenant: tenant,
+        Subscription: subscription,
+        Blueprint: blueprint,
+        Metrics: metrics,
+        Availability: availability,
+        Logs: logs,
+        Name: name,
+        Service: 'AutoScalingGroup',
+        Metrics_interval: metrics_interval,
+        Availability_interval: availability_interval,
+        Logs_interval: logs_interval,
+        Time: time
+      }
+
+      puts res
+
+    end
+  end
+
+  def s3(params)
+    if !@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: "s3_monitoring"
+      puts "dsdsdsdsds"
+      res = @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 's3_monitoring', body: {
+        s3_monitoring: {
+          properties: {
+            Account: { type: "string", index: "not_analyzed" },
+            Region: { type: "string", index: "not_analyzed" },
+            Tenant: { type: "string", index: "not_analyzed" },
+            Subscription: { type: "string", index: "not_analyzed" },
+            Blueprint: { type: "string", index: "not_analyzed" },
+            Metrics: { type: "string", index: "not_analyzed" },
+            Availability: { type: "string", index: "not_analyzed" },
+            Logs: { type: "string", index: "not_analyzed" },
+            Name: { type: "string", index: "not_analyzed" },
+            Service: { type: "string", index: "not_analyzed" },
+            Metrics_interval: { type: "string", index: "not_analyzed" },
+            Availability_interval: { type: "string", index: "not_analyzed" },
+            Logs_interval: { type: "string", index: "not_analyzed" },
+            Time: { type: "string", index: "not_analyzed" }
+
+
+          }
+        }
+      }
+      puts res
+    end
+  end
+
+  def rds(params)
+    if !@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: "rds_monitoring"
+      puts "dsdsdsdsds"
+      res = @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'rds_monitoring', body: {
+        rds_monitoring: {
+          properties: {
+            Account: { type: "string", index: "not_analyzed" },
+            Region: { type: "string", index: "not_analyzed" },
+            Tenant: { type: "string", index: "not_analyzed" },
+            Subscription: { type: "string", index: "not_analyzed" },
+            Blueprint: { type: "string", index: "not_analyzed" },
+            Metrics: { type: "string", index: "not_analyzed" },
+            Availability: { type: "string", index: "not_analyzed" },
+            Logs: { type: "string", index: "not_analyzed" },
+            Name: { type: "string", index: "not_analyzed" },
+            Service: { type: "string", index: "not_analyzed" },
+            Metrics_interval: { type: "string", index: "not_analyzed" },
+            Availability_interval: { type: "string", index: "not_analyzed" },
+            Logs_interval: { type: "string", index: "not_analyzed" },
+            Time: { type: "string", index: "not_analyzed" },
+            Endpoint: { type: "string", index: "not_analyzed" }
+
+          }
+        }
+      }
+      puts res
+    end
+  end
+
+  def elb(params)
+    if !@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: "elb_monitoring"
+      puts "dsdsdsdsds"
+      res = @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'elb_monitoring', body: {
+        elb_monitoring: {
+          properties: {
+            Account: { type: "string", index: "not_analyzed" },
+            Region: { type: "string", index: "not_analyzed" },
+            Tenant: { type: "string", index: "not_analyzed" },
+            Subscription: { type: "string", index: "not_analyzed" },
+            Blueprint: { type: "string", index: "not_analyzed" },
+            Metrics: { type: "string", index: "not_analyzed" },
+            Availability: { type: "string", index: "not_analyzed" },
+            Logs: { type: "string", index: "not_analyzed" },
+            Name: { type: "string", index: "not_analyzed" },
+            Service: { type: "string", index: "not_analyzed" },
+            Metrics_interval: { type: "string", index: "not_analyzed" },
+            Availability_interval: { type: "string", index: "not_analyzed" },
+            Logs_interval: { type: "string", index: "not_analyzed" },
+            Time: { type: "string", index: "not_analyzed" }
+
+          }
+        }
+      }
+      puts res
+    end
+  end
+
 
   def check_remote_file_exists(resourse_dir,filename)
     Net::SSH.start(
@@ -73,7 +233,7 @@ class Remote_edit
   def write_audit_log_input(params)
     create_remote_dir('audittrail') unless check_remote_dir_exists('audittrail')
     create_empty_remote_file('audittrail','audit_log_input.txt') unless check_remote_file_exists('audittrail','audit_log_input.txt')
-    fileData = "#{params['number']} #{params['region']} #{params['s3_bucket']}"
+    fileData = "#{params['number']} #{params['s3_bucket']}"
     grep = grep_remote_file('audittrail','audit_log_input.txt',fileData)
     if grep.empty?
       write_remote_file('audittrail','audit_log_input.txt',fileData)
@@ -108,13 +268,13 @@ class Remote_edit
     create_remote_dir('autoscaling') unless check_remote_dir_exists('autoscaling')
     create_empty_remote_file('autoscaling','as_monitoring.txt') unless check_remote_file_exists('autoscaling','as_monitoring.txt')
 
-    tempTSBString = "#{params[:asg][:account]} #{params[:asg][:region]} #{params[:asg][:tenant]} #{params[:asg][:subscription]} #{params[:asg][:blueprint]}"
+    tempTSBString = "#{params[:autoscaling][:account]} #{params[:autoscaling][:region]} #{params[:autoscaling][:tenant]} #{params[:autoscaling][:subscription]} #{params[:autoscaling][:blueprint]}"
     grep = grep_remote_file('autoscaling','as_monitoring.txt',tempTSBString)
     time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
     if grep.empty?
       puts "writing as_monitoring.txt"
-      file_content = "#{tempTSBString} S3 #{params[:asg][:name]} #{params[:asg][:refresh_interval]} #{time} #{params[:asg][:metrics].join(" ")}"
-      file_content += "\n#{tempTSBString} AutoScalingGroup #{params[:asg][:name]} #{params[:asg][:refresh_interval]} #{time} availability OFF"
+      file_content = "#{tempTSBString} S3 #{params[:autoscaling][:name]} #{params[:autoscaling][:refresh_interval]} #{time} #{params[:autoscaling][:metrics].join(" ")}"
+      file_content += "\n#{tempTSBString} AutoScalingGroup #{params[:autoscaling][:name]} #{params[:autoscaling][:refresh_interval]} #{time} availability OFF"
       write_remote_file('autoscaling','as_monitoring.txt',file_content)
     end
   end
@@ -172,10 +332,6 @@ class Remote_edit
       write_remote_file('rds','rds_logs.txt',file_content)
     end
 
-  end
-
-  def update_remote_aws_config
-    
   end
 
 

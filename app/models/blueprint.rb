@@ -23,30 +23,31 @@ class Blueprint
 
   def save(params)
     subscription = Subscription.find(params["subscription_id"])
-    if @@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'blueprintseq'
-      res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprintseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+    # if @@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: 'blueprintseq'
+      res_id = params[:id]  #@@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprintseq' , id: 'sequence', body:{ }, refresh: true)['_version']
       result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprints' , id: res_id, body: {
         Name: params["display_name"], Tenant: subscription.tenant.name , Subscription_id: params['subscription_id'],
         Subscription: subscription.name, Provider: 'aws', Blueprint: params['name'],
         State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
       }
+      self.name = params[:name]
       create_billing
       return res_id
-    else
-      @@client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'blueprintseq', body: {
-        blueprintseq: {
-          properties:{}
-        }
-      }
-      res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprintseq' , id: 'sequence', body:{ }, refresh: true)['_version']
-      result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprints' , id: res_id, body: {
-        Name: params["display_name"], Tenant: subscription.tenant.name , Subscription_id: params['subscription_id'],
-        Subscription: subscription.name, Provider: 'aws', Blueprint: params['name'],
-        State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
-      }
-      create_billing
-      return res_id
-    end
+    # else
+    #   @@client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'blueprintseq', body: {
+    #     blueprintseq: {
+    #       properties:{}
+    #     }
+    #   }
+    #   res_id = @@client.index(index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprintseq' , id: 'sequence', body:{ }, refresh: true)['_version']
+    #   result = @@client.index  index: ELASTICSEARCH_SERVER['admin_index'] , type: 'blueprints' , id: res_id, body: {
+    #     Name: params["display_name"], Tenant: subscription.tenant.name , Subscription_id: params['subscription_id'],
+    #     Subscription: subscription.name, Provider: 'aws', Blueprint: params['name'],
+    #     State: 'created',DateofCreation: Time.now.strftime("%d/%m/%Y").to_s,LastUpdated: Time.now.strftime("%d/%m/%Y").to_s
+    #   }
+    #   create_billing
+    #   return res_id
+    # end
   end
   def self.find(id)
     blueprint_result = nil
@@ -109,6 +110,7 @@ class Blueprint
         puts blueprint
         month = Time.now.strftime("%m").to_s
         year = Time.now.strftime("%Y").to_s
+        puts self.name
         id   = self.subscription.tenant.name+self.subscription.name+self.name+Time.now.strftime("%m").to_s+Time.now.strftime("%Y").to_s
         tenantname = self.subscription.tenant.name.to_s
         subscriptionname = self.subscription.name.to_s
