@@ -54,23 +54,27 @@ class Remote_edit
       account = params['account'][index+2..index+13]
       region = params['region']
       time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
-      availability = 'OFF' if params['metrics']['Infrastructure-Availability']['enabled']
-      availability_interval = params['metrics']['Infrastructure-Availability']['refresh-interval']
-      logs = params['metrics']['Log-Monitoring'].keys.join(" ") if !params['metrics']['Log-Monitoring'].nil?
-      logs_interval = params['refresh_interval']
-      metrics_keys = params['metrics']['Infrastructure-Metrics'].keys if !params['metrics']['Infrastructure-Metrics'].nil?
+      availability = 'OFF' if params['metrics']['Service-Availability']['asg']['enabled']
+      availability_interval = params['metrics']['Service-Availability']['asg']['refresh-interval']
+      logs = nil#params['metrics']['Log-Monitoring'].keys.join(" ") if !params['metrics']['Log-Monitoring'].nil?
+      logs_interval = nil#params['refresh_interval']
+      service = "AutoScalingGroup"
+      # metrics_keys = params['metrics']['Service-Metrics'].keys if !params['metrics']['Service-Metrics'].nil?
       metrics = Array.new
-      metrics_interval = nil
-      metrics_keys.each do |key|
-        params['metrics']['Infrastructure-Metrics'][key]['output-format'].each do |inner_hash|
-          metrics << inner_hash.keys
-        end
-        metrics_interval = params['metrics']['Infrastructure-Metrics'][key]['refresh-interval']
+      params['metrics']['Service-Metrics']['asg']['output-format'].each do |key|
+        metrics << key.keys
       end
+      metrics_interval = params['metrics']['Service-Metrics']['asg']['refresh_interval']
+      # metrics_keys.each do |key|
+      #   params['metrics']['Infrastructure-Metrics'][key]['output-format'].each do |inner_hash|
+      #     metrics << inner_hash.keys
+      #   end
+      #   metrics_interval = params['metrics']['Infrastructure-Metrics'][key]['refresh-interval']
+      # end
       metrics = metrics.flatten.join(" ")
 
-      
-      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "asg_monitoring", id: 1,
+
+      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "asg_monitoring", id: [name,tenant,subscription,blueprint,service].join("."),
       body: {
         Account: account,
         Region: region,
@@ -81,7 +85,7 @@ class Remote_edit
         Availability: availability,
         Logs: logs,
         Name: name,
-        Service: 'AutoScalingGroup',
+        Service: service,
         Metrics_interval: metrics_interval,
         Availability_interval: availability_interval,
         Logs_interval: logs_interval,
@@ -119,12 +123,52 @@ class Remote_edit
         }
       }
       puts res
+    else
+      name = params['name']
+      tenant = Tenant.find(params['tenant']).name
+      subscription = Subscription.find(params['subscription']).name
+      blueprint = Blueprint.find(params['blueprint']).name
+      index = params['account'].index('::')
+      account = params['account'][index+2..index+13]
+      region = params['region']
+      time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+      availability = 'OFF' if params['metrics']['Service-Availability']['s3']['enabled']
+      availability_interval = params['metrics']['Service-Availability']['s3']['refresh-interval']
+      logs = params['metrics']['Service-Logs']['path']
+      logs_interval = params['metrics']['Service-Logs']['refresh-interval']
+      metrics = Array.new
+      params['metrics']['Service-Metrics']['s3']['output-format'].each do |key|
+        metrics << key.keys
+      end
+      metrics = metrics.flatten.join(" ")
+      metrics_interval = params['metrics']['Service-Metrics']['s3']['refresh-interval']
+      service = "S3"
+      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "s3_monitoring", id: [name,tenant,subscription,blueprint,service].join("."),
+      body: {
+        Account: account,
+        Region: region,
+        Tenant: tenant,
+        Subscription: subscription,
+        Blueprint: blueprint,
+        Metrics: metrics,
+        Availability: availability,
+        Logs: logs,
+        Name: name,
+        Service: service,
+        Metrics_interval: metrics_interval,
+        Availability_interval: availability_interval,
+        Logs_interval: logs_interval,
+        Time: time
+      }
+
+      puts res
+
     end
   end
 
   def rds(params)
     if !@client.indices.exists_type index: ELASTICSEARCH_SERVER['admin_index'], type: "rds_monitoring"
-      puts "dsdsdsdsds"
+      # puts "dsdsdsdsds"
       res = @client.indices.put_mapping index: ELASTICSEARCH_SERVER['admin_index'], type: 'rds_monitoring', body: {
         rds_monitoring: {
           properties: {
@@ -148,6 +192,52 @@ class Remote_edit
         }
       }
       puts res
+    else
+      name = params['name']
+      tenant = Tenant.find(params['tenant']).name
+      subscription = Subscription.find(params['subscription']).name
+      blueprint = Blueprint.find(params['blueprint']).name
+      index = params['account'].index('::')
+      account = params['account'][index+2..index+13]
+      region = params['region']
+      time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+      availability = 'OFF' if params['metrics']['Service-Availability']['rds']['enabled']
+      availability_interval = params['metrics']['Service-Availability']['rds']['refresh-interval']
+      logs = Array.new
+      params['metrics']['Service-Logs']['rds']['logfiles'].each do |value|
+        logs << value.values
+      end
+      logs = logs.flatten.join(" ")
+      logs_interval = params['metrics']['Service-Logs']['rds']['refresh-interval']
+      metrics = Array.new
+      params['metrics']['Service-Metrics']['rds']['output-format'].each do |key|
+        metrics << key.keys
+      end
+      metrics = metrics.flatten.join(" ")
+      metrics_interval = params['metrics']['Service-Metrics']['rds']['refresh_interval']
+      endpoint = params['endpoint']
+      service = "RDS"
+      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "rds_monitoring", id: [name,tenant,subscription,blueprint,service].join("."),
+      body: {
+        Account: account,
+        Region: region,
+        Tenant: tenant,
+        Subscription: subscription,
+        Blueprint: blueprint,
+        Metrics: metrics,
+        Availability: availability,
+        Logs: logs,
+        Name: name,
+        Service: service,
+        Metrics_interval: metrics_interval,
+        Availability_interval: availability_interval,
+        Logs_interval: logs_interval,
+        Time: time,
+        Endpoint: endpoint
+      }
+
+      puts res
+
     end
   end
 
@@ -176,6 +266,52 @@ class Remote_edit
         }
       }
       puts res
+
+    else
+
+      name = params['name']
+      tenant = Tenant.find(params['tenant']).name
+      subscription = Subscription.find(params['subscription']).name
+      blueprint = Blueprint.find(params['blueprint']).name
+      index = params['account'].index('::')
+      account = params['account'][index+2..index+13]
+      region = params['region']
+      time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+      availability = 'OFF' if params['metrics']['Service-Availability']['enabled']
+      availability_interval = params['metrics']['Service-Availability']['refresh-interval']
+      logs = params['metrics']['Service-Logs']['path']
+      logs_interval = params['metrics']['Service-Logs']['refresh-interval']
+
+      metrics = Array.new
+      metrics_interval = params['refresh_interval']
+      metrics_keys = params['metrics']['Service-Metrics'].keys if !params['metrics']['Service-Metrics'].nil?
+      metrics_keys.each do |key|
+        params['metrics']['Service-Metrics'][key]['output-format'].each do |inner_hash|
+          metrics << inner_hash.keys
+        end
+      end
+      metrics = metrics.flatten.join(" ")
+      service = "LoadBalancer"
+      res = @client.index index: ELASTICSEARCH_SERVER['admin_index'], type: "elb_monitoring", id: [name,tenant,subscription,blueprint,service].join("."),
+      body: {
+        Account: account,
+        Region: region,
+        Tenant: tenant,
+        Subscription: subscription,
+        Blueprint: blueprint,
+        Metrics: metrics,
+        Availability: availability,
+        Logs: logs,
+        Name: name,
+        Service: service,
+        Metrics_interval: metrics_interval,
+        Availability_interval: availability_interval,
+        Logs_interval: logs_interval,
+        Time: time
+      }
+
+      puts res
+
     end
   end
 
