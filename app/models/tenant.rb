@@ -120,7 +120,7 @@ class Tenant
       `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/service-metrics/_mapping' -d '{  "service-metrics" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" } } }}'`
       `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/serviceavailability/_mapping' -d '{  "serviceavailability" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" } } }}'`
       `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/vmavailability/_mapping' -d '{  "vmavailability" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" } } }}'`
-      `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/logs/_mapping' -d '{  "logs" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" } } }}'`
+      `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/logs/_mapping' -d '{  "logs" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" }, "Service" : { "type" : "string", "index" : "not_analyzed" }, "Channel" : { "type" : "string", "index" : "not_analyzed" }, "program" : { "type" : "string", "index" : "not_analyzed" }, "geoip" : {"properties" : {"area_code" : {"type" : "long"}, "city_name" : { "type" : "string", "index" : "not_analyzed" }, "continent_code" : { "type" : "string", "index" : "not_analyzed" }, "coordinates" : { "type" : "string", "index" : "not_analyzed" }, "country_code2" : { "type" : "string", "index" : "not_analyzed" }, "country_code3" : { "type" : "string", "index" : "not_analyzed" }, "country_name" : { "type" : "string", "index" : "not_analyzed" }, "dma_code" : { "type" : "long" }, "ip" : { "type" : "string", "index" : "not_analyzed" }, "latitude" : { "type" : "double" }, "location" : { "type" : "double" }, "longitude" : { "type" : "double" }, "postal_code" : { "type" : "string", "index" : "not_analyzed" }, "real_region_name" : { "type" : "string", "index" : "not_analyzed" }, "region_name" : { "type" : "string", "index" : "not_analyzed" }, "timezone" : { "type" : "string", "index" : "not_analyzed" } }}} }}'`
       `curl -XPUT 'http://#{ip}:#{port}/#{self.name.downcase}/assets/_mapping' -d '{  "assets" : {"properties" : {"Blueprint" : { "type" : "string", "index" : "not_analyzed" }, "Name" : { "type" : "string", "index" : "not_analyzed" }, "Subscription" : { "type" : "string", "index" : "not_analyzed" }, "Tenant" : { "type" : "string", "index" : "not_analyzed" } } }}'`
 
     end
@@ -143,19 +143,19 @@ class Tenant
     end
   end
 
-  def update_logstash      
+  def update_logstash
     Net::SCP.download!(LOGSTASH_SERVER['ip'], LOGSTASH_SERVER['username'], LOGSTASH_SERVER['server_path_download'], LOGSTASH_SERVER['rails_path_download'], :ssh => { :keys => LOGSTASH_SERVER['keys_path'] } )
     puts "Downloaded"
-    myfile = File.open("agent.conf", "w+")
+    myfile = File.open("agent.conf", "r+")
     text = File.read(myfile)
-    a   = " \nkafka {" +              
+    a   = " \nkafka {" +
           "\nzk_connect => \"internal-kafkacluster-218486480.us-east-1.elb.amazonaws.com:2181\"" +
            "\ntopic_id => " + self.name.to_s +
-           "\nreset_beginning => false" + 
+           "\nreset_beginning => false" +
            "\nconsumer_threads => 1" +
-           "\ngroup_id => \"" + "CG_" + self.name.to_s + "\"" + 
+           "\ngroup_id => \"" + "CG_" + self.name.to_s + "\"" +
           "\n} \nkafka {"
-           new_contents = text.sub(/kafka\s*\{/, a)        
+           new_contents = text.sub(/kafka\s*\{/, a)
           myfile2 = File.open("agent.conf", "r+")
     myfile2.write(new_contents)
     myfile2.close()

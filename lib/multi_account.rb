@@ -72,14 +72,14 @@ class Remote_edit_profile
 
 
   def update_remote_aws_config(param)
-  	#region = param[:region]
-  	index = param[:arn].index('::')
-  	account = param[:arn][index+2..index+13]
-  	role_arn = param[:arn]
-  	tempTSBString = "role_arn = #{role_arn}"
-  	puts tempTSBString
+    #region = param[:region]
+    index = param[:arn].index('::')
+    account = param[:arn][index+2..index+13]
+    role_arn = param[:arn]
+    tempTSBString = "role_arn = #{role_arn}"
+    puts tempTSBString
     create_remote_dir('.aws') unless check_remote_dir_exists('.aws')
-    create_empty_remote_file('.aws','config') unless check_remote_file_exists('.aws','config')    
+    create_empty_remote_file('.aws','config') unless check_remote_file_exists('.aws','config')
     grep = grep_remote_file('.aws','config',tempTSBString)
     if grep.empty?
       puts "writing aws config"

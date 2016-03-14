@@ -13,8 +13,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user_from_token!, :except => [:sign_in, :sign_up], unless: :devise_controller?
   before_action :authenticate_user!, :except => [:sign_in, :sign_up], unless: :devise_controller?
   before_action :configure_permitted_parameters, if: :devise_controller?
-  
-  
+
+
   def authenticate_user_from_token!
     user_email = request.headers["X-API-EMAIL"].presence
     user_auth_token = request.headers["X-API-TOKEN"].presence

@@ -3,13 +3,13 @@ class User < ActiveRecord::Base
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable,
     :recoverable, :rememberable, :trackable, :validatable
-  
+
   before_save :ensure_authentication_token!
-  
+
   validates :firstname, presence: true
   validates :email, presence: true, uniqueness: true
   validates :username, presence: true, uniqueness: true
-  
+
   def generate_secure_token_string
     SecureRandom.urlsafe_base64(25).tr('lIO0', 'sxyz')
   end
@@ -35,3 +35,5 @@ class User < ActiveRecord::Base
     self.ldap?
   end
 end
+
+#2147483000 ES very high search number

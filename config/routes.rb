@@ -1,8 +1,8 @@
 Rails.application.routes.draw do
-  post  'add_account' => 'multi_account#add_account'
-
+  post  'cloud_accounts' => 'cloud_accounts#create'
   post 'audit_log_input' => 'paas_service#write_to_remote_audit_log_input_txt'
-  post 'paas_service' => 'paas_services#write_service'
+  post 'paas_service' => 'paas_services#write_paas_data_to_es'
+  delete 'paas_service' => 'paas_services#delete_paas_data_from_es'
 
   root 'tenants#index'
 
